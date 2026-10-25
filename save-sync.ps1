@@ -73,7 +73,9 @@ function Get-CloudDir {
         if ($s.cloudDir) { return $s.cloudDir }
     }
     $default = $null
-    if ($env:OneDrive -and (Test-Path $env:OneDrive)) { $default = Join-Path $env:OneDrive "SaveSync" }
+    $od = $env:OneDrive
+    if (-not ($od -and (Test-Path $od))) { $od = Join-Path $env:USERPROFILE "OneDrive" }
+    if (Test-Path $od) { $default = Join-Path $od "SaveSync" }
 
     if ($Quiet) {
         if (-not $default) { throw "No hay carpeta de nube configurada. Abre save-sync una vez a mano." }
