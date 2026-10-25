@@ -1,83 +1,60 @@
 # save-sync
 
-Sincroniza las partidas guardadas de juegos **sin nube propia** entre varios ordenadores, usando una carpeta de OneDrive, Google Drive o Dropbox.
+Sincroniza las partidas guardadas de juegos **sin nube propia** entre varios ordenadores Windows, usando OneDrive, Google Drive o Dropbox.
 
-Juegas en un PC, cierras el juego, y en el otro PC sigues donde lo dejaste. Sin copiar archivos a mano.
+Juegas en un PC, cierras el juego, y en el otro sigues donde lo dejaste. No hay que copiar nada a mano ni instalar nada: funciona con PowerShell, que ya viene con Windows.
 
 ## Cómo funciona
 
-1. La carpeta de guardado del juego se mueve a una carpeta de la nube.
-2. En su sitio original se crea un enlace (junction en Windows, symlink en Linux/macOS).
-3. El juego cree que guarda en local, pero los archivos están en la nube y el cliente de sincronización los sube y baja solo.
-
-## Requisitos
-
-- Python 3.9 o superior.
-- Un cliente de nube instalado y sincronizando en los dos ordenadores (OneDrive viene con Windows).
-- No hacen falta permisos de administrador en Windows.
+1. La carpeta de guardado del juego se mueve a una carpeta de la nube (`OneDrive\SaveSync\Partidas\NOMBRE`).
+2. En su sitio se deja un enlace (*junction*). El juego cree que guarda en local, pero los archivos están en la nube.
+3. La **lista de juegos** (`games.json`) también está en la nube. Si añades un juego desde un PC, aparece en todos.
+4. Cada PC guarda su propia ruta para cada juego. Si un juego guarda en `%APPDATA%` o `%USERPROFILE%`, la ruta sirve automáticamente en los demás PC.
 
 ## Instalación
 
-```
-git clone https://github.com/Poloni2/save-sync.git
-cd save-sync
-copy config.example.json config.json
-```
+1. Descarga el repositorio (botón verde **Code → Download ZIP**) y descomprímelo en una carpeta fija, por ejemplo `Documentos\save-sync`.
+2. Doble clic en **`SaveSync.bat`**.
+3. La primera vez detecta OneDrive y te pregunta si usar esa carpeta. Si usas otra nube, elige su carpeta.
 
-Edita `config.json`:
+No hacen falta permisos de administrador.
 
-| Campo | Qué es |
+## Menú
+
+| Opción | Qué hace |
 |---|---|
-| `cloud_dir` | Carpeta de la nube donde se guardarán las partidas. |
-| `pin_onedrive` | Si es `true`, marca la carpeta como "Mantener siempre en este dispositivo" en OneDrive. |
-| `games` | Lista de juegos: `name` (nombre de la carpeta en la nube) y `path` (carpeta de guardado del juego). |
+| 1. Añadir juego | Eliges la carpeta de partidas del juego. Se sube a la nube y se enlaza. Si el juego ya está en la lista (añadido desde otro PC), escribe el mismo nombre para añadir la ruta de este PC. |
+| 2. Sincronizar este PC | Enlaza en este PC todos los juegos de la lista. Úsalo en el segundo PC o después de añadir juegos desde el otro. |
+| 3. Ver estado | Muestra cada juego, si está enlazado aquí, la fecha del último guardado y en qué PC está registrado. |
+| 4. Sincronizar al iniciar Windows | Hace la opción 2 sola al encender el PC, en segundo plano. |
+| 5. Deshacer enlace | Quita el enlace en este PC y deja una copia local de las partidas. |
 
-Se pueden usar variables como `%USERPROFILE%`, `%APPDATA%`, `%OneDrive%` o `~`.
+También se puede usar por línea de comandos: `SaveSync.bat add|sync|status|unlink|autostart`.
 
-## Uso
+## Qué pasa con las partidas que ya existen
 
-**Primer ordenador** (el que tiene las partidas):
-
-```
-python save_sync.py setup
-```
-
-Mueve las partidas a la nube y crea los enlaces.
-
-**Segundo ordenador**: espera a que la nube termine de sincronizar y ejecuta lo mismo:
-
-```
-python save_sync.py setup
-```
-
-Si ese PC ya tenía partidas locales, no se borran: se renombran a `NOMBRE.backup-FECHA`.
-
-**Comprobar el estado:**
-
-```
-python save_sync.py status
-```
-
-**Deshacer** (quita el enlace y deja una copia local de las partidas):
-
-```
-python save_sync.py unlink
-```
+- **El juego aún no está en la nube:** las partidas de este PC se suben.
+- **La nube ya tiene partidas de ese juego:** mandan las de la nube. Las de este PC no se borran: se renombran a `CARPETA.backup-FECHA`.
+- **El juego no está instalado en este PC:** se salta, sin error.
 
 ## Dónde guardan algunos juegos
 
 | Juego / motor | Carpeta |
 |---|---|
-| Fangames de RPG Maker XP / Pokémon Essentials | `%USERPROFILE%\Saved Games\NOMBRE_DEL_JUEGO` |
+| Fangames de Pokémon Essentials (versiones nuevas) | `%APPDATA%\NOMBRE_DEL_JUEGO` |
+| Fangames de RPG Maker XP (versiones antiguas) | `%USERPROFILE%\Saved Games\NOMBRE_DEL_JUEGO` |
+| Ryujinx (Switch) | `%APPDATA%\Ryujinx\bis\user\save` |
 | Muchos juegos de Steam sin Steam Cloud | `%APPDATA%`, `%LOCALAPPDATA%` o `Documentos\My Games` |
 
-Si un juego de Steam tiene **Steam Cloud**, no lo añadas: ya se sincroniza solo.
+Si un juego de Steam tiene **Steam Cloud**, no lo añadas: ya se sincroniza solo. Los logros y las horas de Steam van siempre en tu cuenta.
 
 ## Reglas para no perder partidas
 
-- No juegues al mismo juego en los dos ordenadores a la vez.
-- Antes de apagar, comprueba que la nube ha terminado de subir.
-- Antes de abrir el juego en el otro PC, comprueba que la nube ha terminado de bajar.
+- No juegues al mismo juego en los dos PC a la vez.
+- Antes de apagar, espera a que OneDrive termine de subir (icono de la nube sin flechas).
+- Antes de abrir el juego en el otro PC, espera a que termine de bajar.
+
+Hay un registro de lo que hace la app en `%APPDATA%\save-sync\save-sync.log`.
 
 ## Licencia
 

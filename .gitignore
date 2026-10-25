@@ -1,4 +1,2 @@
-# Configuración personal (rutas de cada usuario)
-config.json
-__pycache__/
-*.pyc
+# Ajustes y logs locales
+*.log
