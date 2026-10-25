@@ -19,7 +19,7 @@ Juegas en un PC, cierras el juego, y en el otro PC sigues donde lo dejaste. Sin 
 ## Instalación
 
 ```
-git clone https://github.com/TU_USUARIO/save-sync.git
+git clone https://github.com/Poloni2/save-sync.git
 cd save-sync
 copy config.example.json config.json
 ```
